@@ -58,18 +58,23 @@ def show(image):
     ax.yaxis.set_ticks_position('left')
     pyplot.show()
 
-def returnDataToUse():
-    training_data = list(read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
-    answersToUse = [np.zeros((28))] * len(training_data)
-    dataToUse = [np.zeros((28*28))] * len(training_data)
-    for i in range(len(training_data)):
-        answer, data = training_data[i]
+training_data = list(
+    read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
+
+testing_data = list(
+    read(dataset='testing', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
+
+def returnDataToUse(dataRead):
+    answersToUse = [np.zeros((1))] * len(dataRead)
+    dataToUse = [np.zeros((28*28))] * len(dataRead)
+    for i in range(len(dataRead)):
+        answer, data = dataRead[i]
         answersToUse[i] = answer
         for d in range(len(data)):
             for j in range(len(data[d])):
-                dataToUse[i][d] += data[d][j]
-
+                dataToUse[i][d*28 + j] += data[d][j]
     return answersToUse, dataToUse
+
 
 """------------------------------TRAINING------------------------------------"""
 print("Initializing...")
@@ -77,14 +82,17 @@ print("Initializing...")
 trainingSamples = 1500
 
 # Gamma: gradient descent parameter
-clf = svm.SVC(gamma=0.01, C=100)
+clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma=0.001, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
 
 # Index max
 #print("Maximum index:", getIndexMax(data), "\n")
 
 #training_data = list(read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
 
-answerArray, trainingAr = returnDataToUse()
+answerArray, trainingAr = returnDataToUse(training_data)
 
 x, y = trainingAr, answerArray
 
@@ -94,32 +102,32 @@ clf.fit(x, y)
 
 """------------------------------Sample prediction--------------------------"""
 # CHOOSE AN EXAMPLE TO PREDICT
-example = 1555
+#example = 1555
 
-labels, pix = returnDataToUse()
-predictA = labels[-1]
-predictQ = pix[-1]
+labels, pix = returnDataToUse(testing_data)
+from random import randint
+index = randint(0, len(pix))
+predictA = labels[index]
+predictQ = pix[index]
 
 print("Prediction:", clf.predict([predictQ]))
 print("Actual answer", predictA, "\n")
 
-# Display the actual image
-show(pix[-1])
+#Display the actual image
+labels, pix = testing_data[index]
+show(pix)
 
 """------------------------------Testing Function----------------------------"""
 # Actual testing on residual samples (=samples not used for training)
 print("Testing...")
 correct = 0
 wrong = 0
-j = example + 1
-while j < getIndexMax(data):
-    q = returnDataToUse(data, j, training=True, last=True)
-    a = returnDataToUse(data, j, answers=True, last=True)
-    p = clf.predict([q])
-    if a == p[0]:
+
+a, q = returnDataToUse(testing_data)
+for i in range(len(testing_data)):
+    p = clf.predict([q[i]])
+    if a[i] == p[0]:
         correct += 1
     else:
         wrong += 1
-    j += 1
-
 print("Statistics, correct answers:", correct / (correct + wrong))
