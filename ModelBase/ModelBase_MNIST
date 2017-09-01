@@ -5,6 +5,7 @@ import struct
 
 # Import of support vector machine (svm)
 from sklearn import svm
+from sklearn.neural_network import MLPClassifier
 
 """--------------------------------SETTINGS---------------------------------"""
 
@@ -61,36 +62,38 @@ def show(image):
 training_data = list(
     read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
 
+training_data = training_data[0:len(training_data):10]
+
 testing_data = list(
     read(dataset='testing', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
 
+testing_data = testing_data[0:len(testing_data):10]
+
 def returnDataToUse(dataRead):
-    answersToUse = [np.zeros((1))] * len(dataRead)
-    dataToUse = [np.zeros((28*28))] * len(dataRead)
+    answersToUse = np.zeros(len(dataRead))
+    dataToUse = np.zeros((len(dataRead),28*28))
     for i in range(len(dataRead)):
         answer, data = dataRead[i]
         answersToUse[i] = answer
         for d in range(len(data)):
             for j in range(len(data[d])):
-                dataToUse[i][d*28 + j] += data[d][j]
+                dataToUse[i][d*28 + j] = data[d][j]
     return answersToUse, dataToUse
+
+def showDataToUse(image):
+    imageToShow = np.zeros(shape=(28,28))
+    for i in range(28):
+        for j in range(28):
+            imageToShow[i][j] = image[28*i+j]
+    show(imageToShow)
 
 
 """------------------------------TRAINING------------------------------------"""
 print("Initializing...")
-# FIX THE NUMBER OF TRAINING SAMPLES
-trainingSamples = 1500
 
 # Gamma: gradient descent parameter
-clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape='ovr', degree=3, gamma=0.001, kernel='rbf',
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)
 
-# Index max
-#print("Maximum index:", getIndexMax(data), "\n")
-
-#training_data = list(read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
+clf =  svm.SVC()
 
 answerArray, trainingAr = returnDataToUse(training_data)
 
@@ -115,9 +118,24 @@ print("Actual answer", predictA, "\n")
 
 #Display the actual image
 labels, pix = testing_data[index]
-show(pix)
+#show(pix)
+
 
 """------------------------------Testing Function----------------------------"""
+from sklearn.model_selection import train_test_split
+
+from sklearn.model_selection import cross_val_score
+
+cv_performance = cross_val_score(clf, x, y, cv=10)
+
+test_performance = clf.fit(x, y).score(x, y)
+
+print ('Cross-validation accuracy score: %0.3f,'
+
+' test accuracy score: %0.3f'
+
+% (np.mean(cv_performance),test_performance))
+
 # Actual testing on residual samples (=samples not used for training)
 print("Testing...")
 correct = 0
