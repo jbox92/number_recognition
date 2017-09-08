@@ -1,10 +1,9 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-import struct
+from sklearn import svm
+import Training as train
+import Testing as test
 
 # Import of support vector machine (svm)
-from sklearn import svm
+
 from sklearn.neural_network import MLPClassifier
 
 """--------------------------------SETTINGS---------------------------------"""
@@ -14,190 +13,12 @@ Loosely inspired by http://abel.ee.ucla.edu/cvxopt/_downloads/mnist.py
 which is GPL licensed.
 """
 
-def read(dataset = "training", path = "C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets/"):
-    """
-    Python function for importing the MNIST data set.  It returns an iterator
-    of 2-tuples with the first element being the label and the second element
-    being a numpy.uint8 2D array of pixel data for the given image.
-    """
-
-    if dataset is "training":
-        fname_img = os.path.join(path, 'train-images.idx3-ubyte')
-        fname_lbl = os.path.join(path, 'train-labels.idx1-ubyte')
-    elif dataset is "testing":
-        fname_img = os.path.join(path, 't10k-images.idx3-ubyte')
-        fname_lbl = os.path.join(path, 't10k-labels.idx1-ubyte')
-    else:
-        raise ValueError("dataset must be 'testing' or 'training'")
-
-    # Load everything in some numpy arrays
-    with open(fname_lbl, 'rb') as flbl:
-        magic, num = struct.unpack(">II", flbl.read(8))
-        lbl = np.fromfile(flbl, dtype=np.int8)
-
-    with open(fname_img, 'rb') as fimg:
-        magic, num, rows, cols = struct.unpack(">IIII", fimg.read(16))
-        img = np.fromfile(fimg, dtype=np.uint8).reshape(len(lbl), rows, cols)
-
-    get_img = lambda idx: (lbl[idx], img[idx])
-
-    # Create an iterator which returns each image in turn
-    for i in range(len(lbl)):
-        yield get_img(i)
-
-def show(image):
-    """
-    Render a given numpy.uint8 2D array of pixel data.
-    """
-    from matplotlib import pyplot
-    import matplotlib as mpl
-    fig = pyplot.figure()
-    ax = fig.add_subplot(1,1,1)
-    imgplot = ax.imshow(image, cmap=mpl.cm.gray)
-    imgplot.set_interpolation('nearest')
-    ax.xaxis.set_ticks_position('top')
-    ax.yaxis.set_ticks_position('left')
-    pyplot.show()
-
-training_data = list(
-    read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
-
-#training_data = training_data[0:len(training_data):50]
-
-testing_data = list(
-    read(dataset='testing', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
-
-#testing_data = testing_data[0:len(testing_data):50]
-
-def returnDataToUse(dataRead):
-    answersToUse = np.zeros(len(dataRead))
-    dataToUse = np.zeros((len(dataRead),28*28))
-    for i in range(len(dataRead)):
-        answer, data = dataRead[i]
-        answersToUse[i] = answer
-        for d in range(len(data)):
-            for j in range(len(data[d])):
-                dataToUse[i][d*28 + j] = data[d][j]
-    return answersToUse, dataToUse
-
-def showDataToUse(image):
-    imageToShow = np.zeros(shape=(28,28))
-    for i in range(28):
-        for j in range(28):
-            imageToShow[i][j] = image[28*i+j]
-    show(imageToShow)
-
-
 """------------------------------TRAINING------------------------------------"""
-print("Initializing...")
+clf = svm.SVC(C=0.001, kernel='linear')
 
-# Gamma: gradient descent parameter
-
-clf =  svm.SVC(C = 0.001, kernel='linear')
-
-answerArray, trainingAr = returnDataToUse(training_data)
-
-x_train, y_train = trainingAr, answerArray
-y_test, x_test = returnDataToUse(testing_data)
-
-# Fit the data
 print("Training...")
-clf.fit(x_train, y_train)
-
-
-"""------------------------------Sample prediction--------------------------"""
-# CHOOSE AN EXAMPLE TO PREDICT
-#example = 1555
-
-labels, pix = returnDataToUse(testing_data)
-from random import randint
-index = randint(0, len(pix))
-predictA = labels[index]
-predictQ = pix[index]
-
-print("Prediction:", clf.predict([predictQ]))
-print("Actual answer", predictA, "\n")
-
-#Display the actual image
-labels, pix = testing_data[index]
-#show(pix)
-
+train.training(training_images, training_answers, 'lerenLezen.pkl', clf)
 
 """------------------------------Testing Function----------------------------"""
-
-# CROSSVALIDATION
-from sklearn.model_selection import train_test_split
-
-from sklearn.model_selection import *
-
-#from sklearn.preprocessing import MinMaxScaler
-from sklearn.svm import SVC
-
-svm = SVC()
-
-cv_performance = cross_val_score(svm, x_train, y_train,
-
-cv=10)
-
-test_performance = svm.fit(x_train, y_train).score(x_test,
-
-y_test)
-
-print ('Cross-validation accuracy score: %0.3f,'
-
-' test accuracy score: %0.3f'
-
-% (np.mean(cv_performance),test_performance))
-
-#ESTIMATE BEST PARAMETERS
-
-learning_algo = SVC(kernel='linear', random_state=101)
-
-search_space = [{'kernel': ['linear'],
-
-'C': np.logspace(-3, 3, 7)},
-
-{'kernel': ['rbf'],
-
-'C':np.logspace(-3, 3, 7),
-
-'gamma': np.logspace(-3, 2, 6)}]
-
-gridsearch = GridSearchCV(learning_algo,
-
-param_grid=search_space,
-
-refit=True, cv=10)
-
-gridsearch.fit(x_train,y_train)
-
-print ('Best parameter: %s'
-
-% str(gridsearch.best_params_))
-
-cv_performance = gridsearch.best_score_
-
-test_performance = gridsearch.score(x_test, y_test)
-
-print ('Cross-validation accuracy score: %0.3f,'
-
-' test accuracy score: %0.3f'
-
-% (cv_performance,test_performance))
-
-# Actual testing on residual samples (=samples not used for training)
 print("Testing...")
-
-
-# TEST
-correct = 0
-wrong = 0
-
-a, q = returnDataToUse(testing_data)
-for i in range(len(testing_data)):
-    p = clf.predict([q[i]])
-    if a[i] == p[0]:
-        correct += 1
-    else:
-        wrong += 1
-print("Statistics, correct answers:", correct / (correct + wrong))
+test.testing(testing_images, testing_answers, 'lerenLezen.pkl')
