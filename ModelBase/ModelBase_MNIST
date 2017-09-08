@@ -62,12 +62,12 @@ def show(image):
 training_data = list(
     read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
 
-training_data = training_data[0:len(training_data):10]
+#training_data = training_data[0:len(training_data):50]
 
 testing_data = list(
     read(dataset='testing', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
 
-testing_data = testing_data[0:len(testing_data):10]
+#testing_data = testing_data[0:len(testing_data):50]
 
 def returnDataToUse(dataRead):
     answersToUse = np.zeros(len(dataRead))
@@ -93,15 +93,17 @@ print("Initializing...")
 
 # Gamma: gradient descent parameter
 
-clf =  svm.SVC()
+clf =  svm.SVC(C = 0.001, kernel='linear')
 
 answerArray, trainingAr = returnDataToUse(training_data)
 
-x, y = trainingAr, answerArray
+x_train, y_train = trainingAr, answerArray
+y_test, x_test = returnDataToUse(testing_data)
 
 # Fit the data
 print("Training...")
-clf.fit(x, y)
+clf.fit(x_train, y_train)
+
 
 """------------------------------Sample prediction--------------------------"""
 # CHOOSE AN EXAMPLE TO PREDICT
@@ -122,13 +124,24 @@ labels, pix = testing_data[index]
 
 
 """------------------------------Testing Function----------------------------"""
+
+# CROSSVALIDATION
 from sklearn.model_selection import train_test_split
 
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import *
 
-cv_performance = cross_val_score(clf, x, y, cv=10)
+#from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import SVC
 
-test_performance = clf.fit(x, y).score(x, y)
+svm = SVC()
+
+cv_performance = cross_val_score(svm, x_train, y_train,
+
+cv=10)
+
+test_performance = svm.fit(x_train, y_train).score(x_test,
+
+y_test)
 
 print ('Cross-validation accuracy score: %0.3f,'
 
@@ -136,8 +149,47 @@ print ('Cross-validation accuracy score: %0.3f,'
 
 % (np.mean(cv_performance),test_performance))
 
+#ESTIMATE BEST PARAMETERS
+
+learning_algo = SVC(kernel='linear', random_state=101)
+
+search_space = [{'kernel': ['linear'],
+
+'C': np.logspace(-3, 3, 7)},
+
+{'kernel': ['rbf'],
+
+'C':np.logspace(-3, 3, 7),
+
+'gamma': np.logspace(-3, 2, 6)}]
+
+gridsearch = GridSearchCV(learning_algo,
+
+param_grid=search_space,
+
+refit=True, cv=10)
+
+gridsearch.fit(x_train,y_train)
+
+print ('Best parameter: %s'
+
+% str(gridsearch.best_params_))
+
+cv_performance = gridsearch.best_score_
+
+test_performance = gridsearch.score(x_test, y_test)
+
+print ('Cross-validation accuracy score: %0.3f,'
+
+' test accuracy score: %0.3f'
+
+% (cv_performance,test_performance))
+
 # Actual testing on residual samples (=samples not used for training)
 print("Testing...")
+
+
+# TEST
 correct = 0
 wrong = 0
 
