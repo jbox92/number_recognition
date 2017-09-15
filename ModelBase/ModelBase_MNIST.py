@@ -6,6 +6,7 @@ import Training as train
 import Testing as test
 import numpy as np
 import samplePredictor
+import os
 
 """
 Loosely inspired by http://abel.ee.ucla.edu/cvxopt/_downloads/mnist.py
@@ -15,12 +16,16 @@ toTrain = input("Pretrained model? (y/n): ") == "n"
 
 print("Initializing...")
 
+
+dir = os.path.dirname(__file__)
+pathToDataset = os.path.join(dir, 'Datasets')
+
 if toTrain:
     training_data = list(
-        dataPrep.read(dataset='training', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
+        dataPrep.read(dataset='training', path=pathToDataset))
 
 testing_data = list(
-    dataPrep.read(dataset='testing', path='C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets'))
+    dataPrep.read(dataset='testing', path=pathToDataset))
 
 print("Reshaping Data...")
 if toTrain:
@@ -54,6 +59,8 @@ if toTest:
 
 
 """------------------------------ Guess a number ----------------------------"""
+
+###Temporary ugliness ###
 ourImage = [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
           0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
           0,   0,

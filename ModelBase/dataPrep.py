@@ -2,7 +2,7 @@ import os
 import struct
 import numpy as np
 
-def read(dataset, path="C:/Users/nnobel/Vrijdagmiddagproject_Jesper_Myrthe_Nienke/Datasets/"):
+def read(dataset, path):
     """
     Python function for importing the MNIST data set.  It returns an iterator
     of 2-tuples with the first element being the label and the second element
