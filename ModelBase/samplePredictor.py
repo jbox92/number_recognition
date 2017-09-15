@@ -1,12 +1,14 @@
-import showImage
+from showImage import showNumpyFormat
 from sklearn.externals import joblib
+from math import isclose
 
 def predictSample(filename, image, label):
     clf = joblib.load(filename)
-    predictA = label
-    predictQ = image
 
-    print("Prediction:", clf.predict([predictQ]))
-    print("Actual answer", predictA, "\n")
+    prediction = clf.predict([image])
 
-    showImage.showNumpyFormat(image)
+    print("Prediction:", prediction)
+    print("Actual answer", label, "\n")
+    print("Correct" if isclose(prediction, label) else "Wrong")
+
+    showNumpyFormat(image)
