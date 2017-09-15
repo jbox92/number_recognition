@@ -1,10 +1,12 @@
 import showImage
+from sklearn.externals import joblib
 
-def predictSample(clf, image, label):
+def predictSample(filename, image, label):
+    clf = joblib.load(filename)
     predictA = label
     predictQ = image
 
     print("Prediction:", clf.predict([predictQ]))
     print("Actual answer", predictA, "\n")
 
-    showImage.showMNISTFormat(image)
+    showImage.showNumpyFormat(image)
