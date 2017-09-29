@@ -1,4 +1,5 @@
 from sklearn.externals import joblib
+from math import isclose
 
 def testing(images, answers, filename):
     clf = joblib.load(filename)
@@ -8,7 +9,7 @@ def testing(images, answers, filename):
     a, q = answers, images
     for i in range(len(q)):
         p = clf.predict([q[i]])
-        if a[i] == p[0]:
+        if isclose(a[i],p[0]):
             correct += 1
         else:
             wrong += 1

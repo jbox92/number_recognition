@@ -11,4 +11,4 @@ def predictSample(filename, image, label):
     print("Actual answer", label, "\n")
     print("Correct" if isclose(prediction, label) else "Wrong")
 
-    showNumpyFormat(image)
+    #showNumpyFormat(image)

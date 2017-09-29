@@ -126,7 +126,7 @@ def displayImage(data, row):
 trainingSamples = 1500
 
 # Gamma: gradient descent parameter
-clf = svm.SVC(gamma=0.01, C=100)
+clf = svm.LineaSVC(gamma=0.01, C=100)
 
 # Index max
 print("Maximum index:", getIndexMax(data), "\n")

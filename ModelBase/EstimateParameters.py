@@ -22,7 +22,8 @@ def estimateParameters(x_train,y_train, x_test, y_test):
     learning_algo = SVC(kernel='linear', random_state=101)
 
     search_space = [{'kernel': ['linear'],
-    'C': np.logspace(-3, 3, 7)},
+    'C': np.logspace(-3, 3, 7),
+    'gamma': np.logspace(-3, 2, 6)},
     {'kernel': ['rbf'],
     'C':np.logspace(-3, 3, 7),
     'gamma': np.logspace(-3, 2, 6)}]
